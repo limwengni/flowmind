@@ -12,36 +12,33 @@ export default function OutputCard({ data }) {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <span className="rounded-full bg-[var(--color-flow-sky)] px-4 py-2 text-sm font-semibold text-sky-900">
-            Confidence: {data.confidence}
-          </span>
           <span className="rounded-full bg-[var(--color-flow-mint)] px-4 py-2 text-sm font-semibold text-emerald-900">
             Input Type: {data.inputType}
           </span>
         </div>
       </div>
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-[1.35fr_0.85fr]">
-        <article className="rounded-[24px] bg-slate-50/80 p-6 shadow-sm ring-1 ring-[rgba(215,224,234,0.7)]">
+      <div className="mt-5 grid gap-4 lg:grid-cols-[1.45fr_0.85fr]">
+        <article className="rounded-[24px] bg-slate-50/82 p-6 shadow-sm ring-1 ring-[rgba(215,224,234,0.7)] lg:min-h-[232px]">
           <h3 className="text-lg font-semibold text-[var(--color-flow-ink)]">Summary</h3>
           <p className="mt-3 text-base leading-7 text-[var(--color-flow-slate)]">
             {data.summary}
           </p>
         </article>
 
-        <article className="rounded-[24px] bg-slate-50/60 p-5 shadow-sm ring-1 ring-[rgba(215,224,234,0.6)]">
+        <article className="rounded-[24px] bg-slate-50/55 p-5 shadow-sm ring-1 ring-[rgba(215,224,234,0.55)]">
           <h3 className="text-lg font-semibold text-[var(--color-flow-ink)]">Next Action</h3>
           <p className="mt-3 rounded-2xl bg-[linear-gradient(135deg,#102033,#284d74)] px-4 py-4 text-base leading-7 text-white shadow-[0_18px_40px_rgba(16,32,51,0.20)]">
             {data.nextAction}
           </p>
         </article>
 
-        <article className="rounded-[24px] bg-slate-50/60 p-5 shadow-sm ring-1 ring-[rgba(215,224,234,0.6)]">
+        <article className="rounded-[24px] bg-slate-50/58 p-5 shadow-sm ring-1 ring-[rgba(215,224,234,0.58)]">
           <h3 className="text-lg font-semibold text-[var(--color-flow-ink)]">Tasks</h3>
           <ul className="mt-3 grid gap-3 text-base text-[var(--color-flow-slate)]">
             {data.tasks.map((task) => (
               <li
-                className="rounded-2xl bg-white px-4 py-3 leading-6 shadow-sm"
+                className="rounded-2xl bg-white/95 px-4 py-3 leading-6 shadow-sm ring-1 ring-[rgba(215,224,234,0.45)]"
                 key={task}
               >
                 {task}
@@ -50,7 +47,7 @@ export default function OutputCard({ data }) {
           </ul>
         </article>
 
-        <article className="rounded-[24px] bg-slate-50/60 p-5 shadow-sm ring-1 ring-[rgba(215,224,234,0.6)]">
+        <article className="rounded-[24px] bg-slate-50/54 p-5 shadow-sm ring-1 ring-[rgba(215,224,234,0.52)]">
           <h3 className="text-lg font-semibold text-[var(--color-flow-ink)]">Timeline</h3>
           <ul className="mt-3 grid gap-3 text-base text-[var(--color-flow-slate)]">
             {data.timeline.map((item) => (
@@ -62,7 +59,7 @@ export default function OutputCard({ data }) {
           </ul>
         </article>
 
-        <article className="rounded-[24px] bg-slate-50/50 p-5 shadow-sm ring-1 ring-[rgba(215,224,234,0.55)] lg:col-span-2">
+        <article className="rounded-[24px] bg-slate-50/38 p-5 shadow-sm ring-1 ring-[rgba(215,224,234,0.46)] lg:col-span-2">
           <h3 className="text-lg font-semibold text-[var(--color-flow-ink)]">Risks</h3>
           <ul className="mt-3 grid gap-2 text-base text-[var(--color-flow-slate)]">
             {data.risks.map((risk) => (

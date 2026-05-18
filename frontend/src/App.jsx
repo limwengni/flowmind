@@ -71,7 +71,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-4 sm:px-6 lg:px-8 lg:py-5">
         <header className="overflow-hidden rounded-[28px] border border-white/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(239,246,252,0.82))] p-6 shadow-[0_22px_60px_rgba(16,32,51,0.08)]">
           <div className="max-w-4xl">
               <p className="text-4xl font-semibold tracking-tight text-[var(--color-flow-ink)] sm:text-5xl lg:text-6xl">
