@@ -1,12 +1,12 @@
 # FlowMind Next Steps
 
-This file reflects the current state after the first push.
+This file reflects the current state after the first push and Day 2 implementation work.
 
 The project already has:
 
 - local and remote git setup
 - first push completed
-- frontend mock UI
+- frontend UI flow
 - backend placeholder endpoint
 - initial README and `.gitignore`
 - basic project structure
@@ -16,10 +16,10 @@ The project already has:
 ### Foundation
 
 - Project skeleton exists
-- Frontend mock UI exists
-- Backend placeholder endpoint exists
+- Frontend UI exists
+- Backend FastAPI app exists
 - Folder structure exists
-- Fake data exists
+- Fake/demo data exists
 - Basic local run flow is known
 
 ### Git / Repo
@@ -29,113 +29,148 @@ The project already has:
 - Remote repo is connected
 - First push is completed
 
-### Post-push UI fixes already done
+### UI / Product flow
 
-- Removed repeated confidence from the output card header
-- Kept confidence in the pipeline section
-- Kept `Input Type` in the output card header
-- Made pipeline status pills smaller and less rounded
-- Softened badge colors for a more mature UI feel
-- Improved output card hierarchy
-- Made `Summary` more dominant
-- Made `Next Action` second in emphasis
-- Reduced repeated explanatory helper text
-- Replaced repetitive pipeline descriptions with meaningful copy
+- Hero section is simplified
+- Input section is implemented
+- Pipeline visualizer is implemented
+- Output card is implemented
+- Output card hierarchy is improved
+- Repeated helper text is reduced
+- Pipeline descriptions are more meaningful
+- Confidence is no longer repeated in the output header
+- Pipeline status pills are more mature and compact
+- Layout height is tighter than before
 
-## Day 2 task plan
+### Day 2 implementation already done
 
-Day 2 should move from scaffold and mock UI into actual implementation work.
+- Frontend calls backend `POST /process`
+- Static frontend output is replaced by backend response
+- Simple UI state flow exists:
+  - idle
+  - processing
+  - result shown
+- Backend CORS is enabled for the frontend dev server
+- 4-layer backend orchestration is preserved
+- Backend output shape remains stable for the frontend
+- Backend now reacts to input content with lightweight heuristics
+- Input type and confidence are returned from backend
+- Tasks, timeline, risks, and next action now depend on the pasted text
 
-Do not try to solve everything at once.
-Move layer by layer.
+## Current status
 
-### Day 2 priority order
+FlowMind is now beyond pure scaffold stage.
 
-1. Connect frontend to backend mock endpoint
-2. Replace static frontend output with backend response
-3. Keep the 4-layer architecture clean in backend code
-4. Start implementing real placeholder-to-real pipeline behavior one layer at a time
+The project already demonstrates:
 
-## Day 2 backend tasks
+- input to backend request flow
+- pipeline-driven UI structure
+- structured output rendering
+- lightweight input-dependent backend behavior
 
-### 1. Keep the 4-layer orchestration structure
+This is already a valid working hackathon prototype.
 
-The backend already has the correct high-level flow:
+## Day 3 plan
 
-1. Understanding
-2. Processing
-3. Synthesis
-4. Formatting
+Day 3 should focus on improving extraction quality and tightening the product feel.
 
-Keep this structure.
-Do not collapse everything into one file.
+Do not introduce unnecessary complexity yet.
+The best next step is to improve correctness before adding more surface area.
 
-### 2. Improve schema stability
+## Day 3 priority order
 
-- make sure output shape is always fixed
-- missing fields should remain empty or null
-- frontend should always receive the same structure
+1. Improve backend extraction quality
+2. Refine pipeline state realism in the UI
+3. Clean up API docs and backend response models
+4. Prepare for demo stability
 
-### 3. Expand placeholder logic safely
+## Day 3 backend tasks
 
-Start simple:
+### 1. Improve heuristic extraction rules
 
-- detect a rough document type
-- extract obvious task-like lines
-- extract obvious timeline-like lines
-- produce a structured object with the fixed schema
+Current logic is working, but still rough.
 
-Do not overcomplicate this on Day 2.
+Focus on:
 
-### 4. Keep backend demo-safe
+- separating task lines from risk lines more accurately
+- improving owner extraction
+- improving date extraction
+- improving next action selection
+- preventing the same line from being classified into multiple buckets unnecessarily
 
-- no database yet
-- no deployment complexity yet
-- no unnecessary model-routing complexity yet
+### 2. Make understanding layer slightly smarter
 
-## Day 2 frontend tasks
+Improve input classification beyond very basic keyword checks.
 
-### 1. Replace static output with live mock fetch
+Possible upgrades:
 
-- call `POST /process`
-- send textarea content
-- render response in the output card
+- stronger distinction between meeting notes and project briefs
+- detect action-heavy notes vs. informational notes
+- adjust confidence more meaningfully
 
-### 2. Improve state transitions
+### 3. Tighten output normalization
 
-Suggested states:
+Make sure the formatting layer always returns:
 
-- idle
-- processing
-- result shown
+- strings where strings are expected
+- arrays where arrays are expected
+- safe fallback values when extraction fails
 
-This will make the product feel much more believable even before full AI logic exists.
+### 4. Consider response models for API output
 
-### 3. Keep UI simple
+Possible improvement:
 
-- do not add chat UI
-- do not add dashboards
-- do not add extra panels unless they help the main story
+- return the work card through a Pydantic response model
 
-The core story is still:
+This is not mandatory, but it would make the contract cleaner.
 
-input -> pipeline -> structured output
+## Day 3 frontend tasks
+
+### 1. Improve pre-process vs. post-process state clarity
+
+The current UI works, but the pipeline can still feel slightly too active before processing.
+
+Good next improvement:
+
+- calmer idle pipeline state
+- stronger distinction when processing starts
+- clearer transition into completed output state
+
+### 2. Tighten demo behavior
+
+Make sure:
+
+- loading state feels intentional
+- error state is readable
+- process button behavior is stable
+- empty or short input still produces safe output
+
+### 3. Review output card with real varied inputs
+
+Test different inputs and check whether the output card still reads clearly when:
+
+- tasks are long
+- timeline is empty
+- risks are empty
+- summary is short
+
+## Demo readiness tasks
+
+Before the next push or demo round:
+
+- restart backend and confirm new code is running
+- test one meeting-style input
+- test one project-brief-style input
+- test one minimal/short input
+- confirm frontend still renders all cases safely
 
 ## Suggested next working order
 
-### Immediate next step
-
-1. Do the layout height fix
-
-### After that
-
-2. Connect frontend to backend mock endpoint
-3. Replace static output rendering with fetched output
-4. Add simple processing-state behavior
-
-### Only after that
-
-5. Start improving actual layer logic
+1. Restart backend and verify latest behavior
+2. Improve backend heuristic extraction quality
+3. Review frontend state transitions with live testing
+4. Clean API docs naming if needed
+5. Prepare a stable demo input set
 
 ## Important note
 
@@ -146,6 +181,7 @@ The goal is:
 
 - keep the architecture clean
 - keep the demo understandable
-- keep progress steady
+- improve extraction quality gradually
+- avoid overbuilding too early
 
 That is enough for a strong hackathon build path.

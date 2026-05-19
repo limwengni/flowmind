@@ -3,71 +3,115 @@ import InputBox from "./components/InputBox";
 import OutputCard from "./components/OutputCard";
 import PipelineVisualizer from "./components/PipelineVisualizer";
 
-const mockWorkflow = {
-  documentType: "Meeting Transcript",
-  confidence: "94%",
-};
-
-const mockPipeline = [
+const pipelineBlueprint = [
   {
     layer: "Understanding",
-    status: "Done",
-    tone: "done",
     model: "Llama 3.1 8B",
     description: "Classifies document type and selects the analysis path.",
   },
   {
     layer: "Processing",
-    status: "Running",
-    tone: "active",
     model: "Qwen 2.5 14B",
     description: "Extracts structured information across summary, tasks, and risks.",
   },
   {
     layer: "Synthesis",
-    status: "Pending",
-    tone: "pending",
     model: "Qwen 2.5 14B",
     description: "Combines extracted outputs into one unified structure.",
   },
   {
     layer: "Formatting",
-    status: "Pending",
-    tone: "pending",
     model: "Llama 3.1 8B",
     description: "Validates schema shape and prepares the final response.",
   },
 ];
 
-const mockOutput = {
-  confidence: "94%",
-  inputType: "Meeting Transcript",
-  summary:
-    "Cross-functional kickoff notes were normalized into a focused execution snapshot. The discussion centered on launch timing, ownership gaps, and the need to align delivery milestones before the next stakeholder check-in.",
-  tasks: [
-    "Finalize sprint scope - Owner: Aina - Deadline: 18 May",
-    "Confirm engineering estimates - Owner: Dev Team - Deadline: 19 May",
-    "Share stakeholder recap - Owner: Project Ops - Deadline: 19 May",
-  ],
-  timeline: [
-    "Kickoff alignment completed",
-    "Implementation plan review on 20 May",
-    "Execution handoff by 22 May",
-  ],
-  risks: [
-    "Requirements are partially implied rather than explicitly confirmed.",
-    "Timeline may slip if owner assignments remain unresolved.",
-    "Communication dependencies across teams are still informal.",
-  ],
-  nextAction:
-    "Validate owners and deadlines, then convert the card into an execution-ready work plan.",
-};
+function buildPipelineState({ isProcessing, hasOutput }) {
+  return pipelineBlueprint.map((step, index) => {
+    if (hasOutput) {
+      return { ...step, status: "Done", tone: "done" };
+    }
+
+    if (isProcessing) {
+      if (index === 0) {
+        return { ...step, status: "Done", tone: "done" };
+      }
+      if (index === 1) {
+        return { ...step, status: "Running", tone: "active" };
+      }
+    }
+
+    return { ...step, status: "Pending", tone: "pending" };
+  });
+}
+
+function normalizeOutput(response) {
+  return {
+    inputType: response.input_type || "General Notes",
+    confidence: response.confidence || "94%",
+    summary: response.summary || "",
+    tasks: response.tasks || [],
+    timeline: response.timeline || [],
+    risks: response.risks || [],
+    nextAction: response.next_action || "",
+  };
+}
 
 export default function App() {
   const [inputValue, setInputValue] = useState(
     "Team sync notes:\n- launch scope needs cleanup\n- assign owners for blockers\n- confirm timeline for stakeholder review"
   );
+  const [isProcessing, setIsProcessing] = useState(false);
   const [showOutput, setShowOutput] = useState(false);
+  const [processError, setProcessError] = useState("");
+  const [workflowMetadata, setWorkflowMetadata] = useState({
+    documentType: "Meeting Transcript",
+    confidence: "94%",
+  });
+  const [outputData, setOutputData] = useState(null);
+
+  async function handleProcess() {
+    setIsProcessing(true);
+    setProcessError("");
+    setShowOutput(false);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/process", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ raw_input: inputValue }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Unable to process input right now.");
+      }
+
+      const payload = await response.json();
+      const normalized = normalizeOutput(payload);
+
+      setWorkflowMetadata({
+        documentType: normalized.inputType,
+        confidence: normalized.confidence,
+      });
+      setOutputData(normalized);
+      setShowOutput(true);
+    } catch (error) {
+      setProcessError(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while processing the input."
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+
+  const pipelineSteps = buildPipelineState({
+    isProcessing,
+    hasOutput: showOutput,
+  });
 
   return (
     <div className="min-h-screen">
@@ -87,17 +131,24 @@ export default function App() {
           <InputBox
             value={inputValue}
             onChange={setInputValue}
-            onProcess={() => setShowOutput(true)}
+            onProcess={handleProcess}
+            isProcessing={isProcessing}
           />
         </section>
 
+        {processError ? (
+          <section className="rounded-[22px] border border-rose-200 bg-rose-50 px-4 py-3 text-base text-rose-800 shadow-sm">
+            {processError}
+          </section>
+        ) : null}
+
         <PipelineVisualizer
-          steps={mockPipeline}
-          metadata={mockWorkflow}
-          showMetadata={showOutput}
+          steps={pipelineSteps}
+          metadata={workflowMetadata}
+          showMetadata={isProcessing || showOutput}
         />
 
-        {showOutput ? <OutputCard data={mockOutput} /> : null}
+        {showOutput && outputData ? <OutputCard data={outputData} /> : null}
       </div>
     </div>
   );
