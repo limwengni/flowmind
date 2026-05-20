@@ -1,19 +1,29 @@
-def understand_input(raw_input: str) -> dict:
-    normalized_input = (raw_input or "").lower()
-    if "meeting" in normalized_input or "sync" in normalized_input:
-        input_type = "Meeting Transcript"
-        confidence = "94%"
-    elif "brief" in normalized_input or "project" in normalized_input:
-        input_type = "Project Brief"
-        confidence = "91%"
-    else:
-        input_type = "General Notes"
-        confidence = "88%"
+from ..chutes_client import chat_json
 
-    return {
-        "input_type": input_type,
-        "confidence": confidence,
-        "analysis_mode": "heuristic-classification",
-        "notes": "Input type inferred from lightweight keyword matching.",
-        "raw_length": len(raw_input or ""),
-    }
+MODEL = "meta-llama/Llama-3.1-8B-Instruct"
+
+SYSTEM = """\
+You are a document classifier. Analyse the input text and return ONLY valid JSON — no explanation, no markdown fences.
+
+Return this exact shape:
+{"input_type": "<Meeting Transcript|Project Brief|General Notes>", "confidence": "<e.g. 94%>"}\
+"""
+
+
+def understand_input(raw_input: str, access_token: str) -> dict:
+    try:
+        result = chat_json(
+            MODEL,
+            [
+                {"role": "system", "content": SYSTEM},
+                {"role": "user", "content": raw_input},
+            ],
+            access_token,
+            max_tokens=64,
+        )
+        return {
+            "input_type": result.get("input_type", "General Notes"),
+            "confidence": result.get("confidence", "88%"),
+        }
+    except Exception:
+        return {"input_type": "General Notes", "confidence": "88%"}
