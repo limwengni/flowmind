@@ -7,22 +7,22 @@ import PipelineVisualizer from "./components/PipelineVisualizer";
 const pipelineBlueprint = [
   {
     layer: "Understanding",
-    model: "Llama 3.1 8B",
+    model: "Qwen 3.6 27B",
     description: "Classifies document type and selects the analysis path.",
   },
   {
     layer: "Processing",
-    model: "Qwen 2.5 14B",
+    model: "Qwen 3.6 27B",
     description: "Extracts structured information across summary, tasks, and risks.",
   },
   {
     layer: "Synthesis",
-    model: "Qwen 2.5 14B",
+    model: "Qwen 3.6 27B",
     description: "Combines extracted outputs into one unified structure.",
   },
   {
     layer: "Formatting",
-    model: "Llama 3.1 8B",
+    model: "Rule-based formatter",
     description: "Validates schema shape and prepares the final response.",
   },
 ];

@@ -4,12 +4,14 @@ import os
 import secrets
 from typing import Optional
 from urllib.parse import urlencode
+from dotenv import load_dotenv
+load_dotenv()
 
 import httpx
 from fastapi import APIRouter, Cookie, HTTPException, Response
 from fastapi.responses import RedirectResponse
 
-CHUTES_BASE = "https://chutes.ai"
+CHUTES_BASE = "https://api.chutes.ai"
 CLIENT_ID = os.getenv("CHUTES_CLIENT_ID", "YOUR_CLIENT_ID")
 CLIENT_SECRET = os.getenv("CHUTES_CLIENT_SECRET", "YOUR_CLIENT_SECRET")
 REDIRECT_URI = os.getenv("CHUTES_REDIRECT_URI", "http://localhost:8000/auth/callback")

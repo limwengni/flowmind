@@ -1,6 +1,9 @@
+import logging
+
 from ..chutes_client import chat_json
 
-MODEL = "Qwen/Qwen2.5-14B-Instruct"
+MODEL = "Qwen/Qwen3.6-27B-TEE"
+logger = logging.getLogger(__name__)
 
 SYSTEM = """\
 You are a structured information extractor. Given raw notes or a document, extract the following:
@@ -41,6 +44,7 @@ def process_input_payload(raw_input: str, understanding_result: dict, access_tok
             "meta": understanding_result,
         }
     except Exception:
+        logger.exception("Processing layer failed; using fallback response.")
         return {
             "tasks": [],
             "risks": [],

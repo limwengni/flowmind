@@ -1,6 +1,9 @@
+import logging
+
 from ..chutes_client import chat_json
 
-MODEL = "Qwen/Qwen2.5-14B-Instruct"
+MODEL = "Qwen/Qwen3.6-27B-TEE"
+logger = logging.getLogger(__name__)
 
 SYSTEM = """\
 You are a concise summariser. Given extracted information from a document, write a clear 2-3 sentence summary
@@ -35,4 +38,5 @@ def synthesize_output(processing_result: dict, access_token: str) -> dict:
             "summary": result.get("summary", ""),
         }
     except Exception:
+        logger.exception("Synthesis layer failed; using fallback response.")
         return {**processing_result, "summary": ""}

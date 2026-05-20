@@ -1,8 +1,10 @@
 import json
+import logging
 
 import httpx
 
 CHUTES_LLM_BASE = "https://llm.chutes.ai/v1"
+logger = logging.getLogger(__name__)
 
 
 def chat(
@@ -26,8 +28,18 @@ def chat(
                 "temperature": temperature,
             },
         )
-        r.raise_for_status()
-        return r.json()["choices"][0]["message"]["content"]
+        try:
+            r.raise_for_status()
+            payload = r.json()
+            return payload["choices"][0]["message"]["content"]
+        except Exception:
+            logger.exception(
+                "Chutes chat call failed for model %s with status %s and body: %s",
+                model,
+                r.status_code,
+                r.text[:1000],
+            )
+            raise
 
 
 def chat_json(
@@ -45,4 +57,8 @@ def chat_json(
         if raw.startswith("json"):
             raw = raw[4:]
 
-    return json.loads(raw.strip())
+    try:
+        return json.loads(raw.strip())
+    except json.JSONDecodeError:
+        logger.exception("Failed to decode JSON model output for %s: %s", model, raw[:1000])
+        raise

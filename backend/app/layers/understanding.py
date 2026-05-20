@@ -1,6 +1,9 @@
+import logging
+
 from ..chutes_client import chat_json
 
-MODEL = "meta-llama/Llama-3.1-8B-Instruct"
+MODEL = "Qwen/Qwen3.6-27B-TEE"
+logger = logging.getLogger(__name__)
 
 SYSTEM = """\
 You are a document classifier. Analyse the input text and return ONLY valid JSON — no explanation, no markdown fences.
@@ -26,4 +29,5 @@ def understand_input(raw_input: str, access_token: str) -> dict:
             "confidence": result.get("confidence", "88%"),
         }
     except Exception:
+        logger.exception("Understanding layer failed; using fallback response.")
         return {"input_type": "General Notes", "confidence": "88%"}
