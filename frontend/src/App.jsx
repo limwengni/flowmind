@@ -58,13 +58,25 @@ export default function App() {
   );
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeLayer, setActiveLayer] = useState(-1); // -1 = idle
-  const [showOutput, setShowOutput] = useState(false);
+  const [showOutput, setShowOutput] = useState(true);
   const [processError, setProcessError] = useState("");
   const [workflowMetadata, setWorkflowMetadata] = useState({
     documentType: "Meeting Transcript",
     confidence: "94%",
   });
-  const [outputData, setOutputData] = useState(null);
+  const [outputData, setOutputData] = useState({
+    inputType: "Meeting Transcript",
+    confidence: "94%",
+    summary: "Team sync identified three key areas needing immediate attention: launch scope cleanup, blocker ownership, and stakeholder timeline confirmation. Action items have been extracted and prioritised for execution.",
+    tasks: [
+      "Clean up launch scope and define clear boundaries - Owner: TBD - Deadline: TBD",
+      "Assign owners to all current blockers - Owner: TBD - Deadline: TBD",
+      "Confirm timeline for stakeholder review - Owner: TBD - Deadline: TBD",
+    ],
+    timeline: [],
+    risks: ["Blockers currently have no assigned owners, risking delays."],
+    nextAction: "Assign owners to all current blockers before next sync.",
+  });
   const layerTimers = useRef([]);
 
   // Step through layers 0→3 while processing
