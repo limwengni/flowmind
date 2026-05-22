@@ -6,6 +6,22 @@ const COLUMNS = [
   { id: "done", label: "Done", color: "bg-emerald-50 text-emerald-800 ring-emerald-200" },
 ];
 
+const URGENT_KEYWORDS = ["blocker", "blocked", "urgent", "asap", "critical", "immediate", "overdue"];
+const MILD_KEYWORDS = ["important", "priority", "soon", "risk", "delay", "confirm", "review"];
+
+function detectUrgency(text) {
+  const lower = text.toLowerCase();
+  if (URGENT_KEYWORDS.some((k) => lower.includes(k))) return "urgent";
+  if (MILD_KEYWORDS.some((k) => lower.includes(k))) return "mild";
+  return "normal";
+}
+
+const URGENCY_STYLES = {
+  urgent: { label: "Urgent", class: "bg-rose-100 text-rose-700 ring-rose-200" },
+  mild:   { label: "Mild",   class: "bg-orange-100 text-orange-700 ring-orange-200" },
+  normal: { label: "Normal", class: "bg-slate-100 text-slate-500 ring-slate-200" },
+};
+
 function parseTask(raw) {
   const ownerMatch = raw.match(/[-–]\s*Owner:\s*([^-–\n]+)/i);
   const deadlineMatch = raw.match(/[-–]\s*Deadline:\s*([^-–\n]+)/i);
@@ -23,6 +39,7 @@ function parseTask(raw) {
     text,
     owner: rawOwner === "TBD" ? "" : rawOwner,
     deadline: rawDeadline === "TBD" ? "" : rawDeadline,
+    urgency: detectUrgency(text),
   };
 }
 
@@ -60,6 +77,9 @@ function TaskCard({ task, colId, onDragStart, onEdit }) {
       </div>
 
       <div className="mt-2.5 flex flex-wrap gap-2">
+        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${URGENCY_STYLES[task.urgency].class}`}>
+          {URGENCY_STYLES[task.urgency].label}
+        </span>
         {task.owner ? (
           <span className="rounded-full bg-[var(--color-flow-sky)] px-2.5 py-0.5 text-xs font-medium text-sky-900">
             {task.owner}
@@ -83,9 +103,10 @@ function TaskCard({ task, colId, onDragStart, onEdit }) {
 function EditModal({ task, onSave, onClose }) {
   const [owner, setOwner] = useState(task.owner || "");
   const [deadline, setDeadline] = useState(task.deadline || "");
+  const [urgency, setUrgency] = useState(task.urgency || "mild");
 
   function handleSave() {
-    onSave({ ...task, owner: owner.trim(), deadline });
+    onSave({ ...task, owner: owner.trim(), deadline, urgency });
     onClose();
   }
 
@@ -111,6 +132,23 @@ function EditModal({ task, onSave, onClose }) {
               onChange={(e) => setOwner(e.target.value)}
               className="mt-1.5 w-full rounded-[14px] bg-slate-50 px-4 py-2.5 text-sm text-[var(--color-flow-ink)] shadow-[inset_0_0_0_1px_rgba(215,224,234,0.9)] outline-none transition focus:shadow-[inset_0_0_0_1.5px_var(--color-flow-warm)]"
             />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-flow-slate)]">
+              Urgency
+            </label>
+            <div className="mt-1.5 flex gap-2">
+              {Object.entries(URGENCY_STYLES).map(([key, val]) => (
+                <button
+                  key={key}
+                  onClick={() => setUrgency(key)}
+                  className={`flex-1 rounded-full py-2 text-xs font-semibold ring-1 transition ${val.class} ${urgency === key ? "opacity-100 shadow-sm" : "opacity-40"}`}
+                >
+                  {val.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>
