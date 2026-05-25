@@ -33,31 +33,19 @@ export default function OutputCard({ data }) {
           </p>
         </article>
 
-        <article className="rounded-[24px] bg-slate-50/58 p-5 shadow-sm ring-1 ring-[rgba(215,224,234,0.58)]">
-          <h3 className="text-lg font-semibold text-[var(--color-flow-ink)]">Tasks</h3>
-          <ul className="mt-3 grid gap-3 text-base text-[var(--color-flow-slate)]">
-            {data.tasks.map((task) => (
-              <li
-                className="rounded-2xl bg-white/95 px-4 py-3 leading-6 shadow-sm ring-1 ring-[rgba(215,224,234,0.45)]"
-                key={task}
-              >
-                {task}
-              </li>
-            ))}
-          </ul>
-        </article>
-
-        <article className="rounded-[24px] bg-slate-50/54 p-5 shadow-sm ring-1 ring-[rgba(215,224,234,0.52)]">
-          <h3 className="text-lg font-semibold text-[var(--color-flow-ink)]">Timeline</h3>
-          <ul className="mt-3 grid gap-3 text-base text-[var(--color-flow-slate)]">
-            {data.timeline.map((item) => (
-              <li className="flex items-start gap-3" key={item}>
-                <span className="mt-2 h-2.5 w-2.5 rounded-full bg-[var(--color-flow-warm)]" />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </article>
+        {data.timeline.length > 0 ? (
+          <article className="rounded-[24px] bg-slate-50/54 p-5 shadow-sm ring-1 ring-[rgba(215,224,234,0.52)]">
+            <h3 className="text-lg font-semibold text-[var(--color-flow-ink)]">Timeline</h3>
+            <ul className="mt-3 grid gap-3 text-base text-[var(--color-flow-slate)]">
+              {data.timeline.map((item) => (
+                <li className="flex items-start gap-3" key={item}>
+                  <span className="mt-2 h-2.5 w-2.5 rounded-full bg-[var(--color-flow-warm)]" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ) : null}
 
         <article className="rounded-[24px] bg-slate-50/38 p-5 shadow-sm ring-1 ring-[rgba(215,224,234,0.46)] lg:col-span-2">
           <h3 className="text-lg font-semibold text-[var(--color-flow-ink)]">Risks</h3>

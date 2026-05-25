@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import InputBox from "./components/InputBox";
+import KanbanBoard from "./components/KanbanBoard";
 import LoginPage from "./components/LoginPage";
 import OutputCard from "./components/OutputCard";
 import PipelineVisualizer from "./components/PipelineVisualizer";
@@ -27,21 +28,12 @@ const pipelineBlueprint = [
   },
 ];
 
-function buildPipelineState({ isProcessing, hasOutput }) {
+function buildPipelineState({ activeLayer, hasOutput }) {
   return pipelineBlueprint.map((step, index) => {
-    if (hasOutput) {
-      return { ...step, status: "Done", tone: "done" };
-    }
-
-    if (isProcessing) {
-      if (index === 0) {
-        return { ...step, status: "Done", tone: "done" };
-      }
-      if (index === 1) {
-        return { ...step, status: "Running", tone: "active" };
-      }
-    }
-
+    if (hasOutput) return { ...step, status: "Done", tone: "done" };
+    if (activeLayer === -1) return { ...step, status: "Pending", tone: "pending" };
+    if (index < activeLayer) return { ...step, status: "Done", tone: "done" };
+    if (index === activeLayer) return { ...step, status: "Running", tone: "active" };
     return { ...step, status: "Pending", tone: "pending" };
   });
 }
@@ -58,12 +50,16 @@ function normalizeOutput(response) {
   };
 }
 
+// How long each layer "runs" visually while the real request is in flight (ms)
+const LAYER_DURATION = 1800;
+
 export default function App() {
   const [user, setUser] = useState(undefined); // undefined = loading, null = logged out
   const [inputValue, setInputValue] = useState(
     "Team sync notes:\n- launch scope needs cleanup\n- assign owners for blockers\n- confirm timeline for stakeholder review"
   );
   const [isProcessing, setIsProcessing] = useState(false);
+  const [activeLayer, setActiveLayer] = useState(-1); // -1 = idle
   const [showOutput, setShowOutput] = useState(false);
   const [processError, setProcessError] = useState("");
   const [workflowMetadata, setWorkflowMetadata] = useState({
@@ -71,6 +67,25 @@ export default function App() {
     confidence: "94%",
   });
   const [outputData, setOutputData] = useState(null);
+  const layerTimers = useRef([]);
+
+  // Step through layers 0→3 while processing
+  useEffect(() => {
+    layerTimers.current.forEach(clearTimeout);
+    layerTimers.current = [];
+
+    if (!isProcessing) {
+      setActiveLayer(-1);
+      return;
+    }
+
+    pipelineBlueprint.forEach((_, i) => {
+      const id = setTimeout(() => setActiveLayer(i), i * LAYER_DURATION);
+      layerTimers.current.push(id);
+    });
+
+    return () => layerTimers.current.forEach(clearTimeout);
+  }, [isProcessing]);
 
   useEffect(() => {
     fetch("http://localhost:8000/auth/me", { credentials: "include" })
@@ -117,18 +132,14 @@ export default function App() {
       setOutputData(normalized);
       setShowOutput(true);
     } catch (error) {
-      setProcessError(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong while processing the input."
-      );
+      setProcessError("Something went wrong. Please try again in a moment.");
     } finally {
       setIsProcessing(false);
     }
   }
 
   const pipelineSteps = buildPipelineState({
-    isProcessing,
+    activeLayer,
     hasOutput: showOutput,
   });
 
@@ -181,6 +192,10 @@ export default function App() {
         />
 
         {showOutput && outputData ? <OutputCard data={outputData} /> : null}
+
+        {showOutput && outputData?.tasks?.length ? (
+          <KanbanBoard tasks={outputData.tasks} />
+        ) : null}
       </div>
     </div>
   );
