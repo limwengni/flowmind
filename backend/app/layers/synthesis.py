@@ -1,6 +1,6 @@
 import logging
 
-from ..chutes_client import chat_json
+from ..chutes_client import ChutesAPIError, chat_json
 
 MODEL = "Qwen/Qwen3.6-27B-TEE"
 logger = logging.getLogger(__name__)
@@ -37,6 +37,9 @@ def synthesize_output(processing_result: dict, access_token: str) -> dict:
             **processing_result,
             "summary": result.get("summary", ""),
         }
+    except ChutesAPIError:
+        logger.exception("Synthesis layer failed due to Chutes API error.")
+        raise
     except Exception:
         logger.exception("Synthesis layer failed; using fallback response.")
         return {**processing_result, "summary": ""}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const COLUMNS = [
   { id: "todo", label: "To Do", color: "bg-slate-100 text-slate-700 ring-slate-200" },
@@ -43,6 +43,22 @@ function parseTask(raw) {
   };
 }
 
+function buildDefaultColumns(tasks) {
+  return {
+    todo: tasks.map(parseTask),
+    inprogress: [],
+    done: [],
+  };
+}
+
+function normalizeStoredColumns(storedColumns) {
+  return {
+    todo: Array.isArray(storedColumns?.todo) ? storedColumns.todo : [],
+    inprogress: Array.isArray(storedColumns?.inprogress) ? storedColumns.inprogress : [],
+    done: Array.isArray(storedColumns?.done) ? storedColumns.done : [],
+  };
+}
+
 function formatDate(dateStr) {
   if (!dateStr) return null;
   const d = new Date(dateStr);
@@ -54,12 +70,17 @@ function formatDate(dateStr) {
   });
 }
 
-function TaskCard({ task, colId, onDragStart, onEdit }) {
+function TaskCard({ task, colId, isDragging, onDragStart, onDragEnd, onEdit }) {
   return (
     <div
       draggable
       onDragStart={() => onDragStart(task, colId)}
-      className="group cursor-grab rounded-[16px] bg-white p-3.5 shadow-sm ring-1 ring-[rgba(215,224,234,0.7)] transition hover:shadow-md hover:-translate-y-0.5 active:cursor-grabbing"
+      onDragEnd={onDragEnd}
+      className={`group cursor-grab rounded-[16px] bg-white p-3.5 shadow-sm ring-1 ring-[rgba(215,224,234,0.7)] transition duration-200 hover:shadow-md hover:-translate-y-0.5 active:cursor-grabbing ${
+        isDragging
+          ? "rotate-1 scale-[1.02] shadow-[0_18px_45px_rgba(16,32,51,0.18)] ring-[var(--color-flow-warm)] opacity-80"
+          : ""
+      }`}
     >
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-medium leading-5 text-[var(--color-flow-ink)]">
@@ -184,17 +205,48 @@ function EditModal({ task, onSave, onClose }) {
 }
 
 export default function KanbanBoard({ tasks }) {
-  const [columns, setColumns] = useState(() => ({
-    todo: tasks.map(parseTask),
-    inprogress: [],
-    done: [],
-  }));
+  const storageKey = "flowmind.kanban.columns";
+  const sourceKey = useMemo(() => tasks.join("||"), [tasks]);
+  const [columns, setColumns] = useState(() => buildDefaultColumns(tasks));
   const [dragging, setDragging] = useState(null);
   const [dragOverCol, setDragOverCol] = useState(null);
   const [editingTask, setEditingTask] = useState(null);
 
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      if (!raw) {
+        setColumns(buildDefaultColumns(tasks));
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      if (parsed?.sourceKey !== sourceKey) {
+        setColumns(buildDefaultColumns(tasks));
+        return;
+      }
+      setColumns(normalizeStoredColumns(parsed.columns));
+    } catch {
+      setColumns(buildDefaultColumns(tasks));
+    }
+  }, [sourceKey, tasks]);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      storageKey,
+      JSON.stringify({
+        sourceKey,
+        columns,
+      })
+    );
+  }, [columns, sourceKey]);
+
   function onDragStart(task, fromCol) {
     setDragging({ task, fromCol });
+  }
+
+  function onDragEnd() {
+    setDragging(null);
+    setDragOverCol(null);
   }
 
   function onDragOver(e, colId) {
@@ -256,7 +308,7 @@ export default function KanbanBoard({ tasks }) {
               key={col.id}
               className={`rounded-[22px] p-4 transition-all ${
                 dragOverCol === col.id
-                  ? "ring-2 ring-[var(--color-flow-warm)] bg-orange-50/60"
+                  ? "scale-[1.01] ring-2 ring-[var(--color-flow-warm)] bg-orange-50/60 shadow-[0_14px_35px_rgba(211,114,49,0.12)]"
                   : "bg-white/60 ring-1 ring-[var(--color-flow-line)]"
               }`}
               onDragOver={(e) => onDragOver(e, col.id)}
@@ -278,13 +330,21 @@ export default function KanbanBoard({ tasks }) {
                     key={task.id}
                     task={task}
                     colId={col.id}
+                    isDragging={dragging?.task.id === task.id}
                     onDragStart={onDragStart}
+                    onDragEnd={onDragEnd}
                     onEdit={setEditingTask}
                   />
                 ))}
                 {columns[col.id].length === 0 && (
-                  <div className="flex items-center justify-center rounded-[14px] border-2 border-dashed border-[var(--color-flow-line)] py-6">
-                    <p className="text-xs text-[var(--color-flow-slate)]">Drop here</p>
+                  <div className={`flex items-center justify-center rounded-[14px] border-2 border-dashed py-6 transition-colors ${
+                    dragOverCol === col.id
+                      ? "border-[var(--color-flow-warm)] bg-orange-50 text-[var(--color-flow-warm)]"
+                      : "border-[var(--color-flow-line)] text-[var(--color-flow-slate)]"
+                  }`}>
+                    <p className="text-xs font-medium">
+                      {dragOverCol === col.id ? "Release to drop card here" : "Drop here"}
+                    </p>
                   </div>
                 )}
               </div>

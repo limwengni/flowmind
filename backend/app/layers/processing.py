@@ -1,6 +1,6 @@
 import logging
 
-from ..chutes_client import chat_json
+from ..chutes_client import ChutesAPIError, chat_json
 
 MODEL = "Qwen/Qwen3.6-27B-TEE"
 logger = logging.getLogger(__name__)
@@ -43,6 +43,9 @@ def process_input_payload(raw_input: str, understanding_result: dict, access_tok
             "next_action": result.get("next_action", ""),
             "meta": understanding_result,
         }
+    except ChutesAPIError:
+        logger.exception("Processing layer failed due to Chutes API error.")
+        raise
     except Exception:
         logger.exception("Processing layer failed; using fallback response.")
         return {

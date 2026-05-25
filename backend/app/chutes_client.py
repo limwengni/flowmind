@@ -7,6 +7,13 @@ CHUTES_LLM_BASE = "https://llm.chutes.ai/v1"
 logger = logging.getLogger(__name__)
 
 
+class ChutesAPIError(Exception):
+    def __init__(self, status_code: int, message: str):
+        super().__init__(message)
+        self.status_code = status_code
+        self.message = message
+
+
 def chat(
     model: str,
     messages: list,
@@ -32,6 +39,23 @@ def chat(
             r.raise_for_status()
             payload = r.json()
             return payload["choices"][0]["message"]["content"]
+        except httpx.HTTPStatusError:
+            logger.exception(
+                "Chutes chat call failed for model %s with status %s and body: %s",
+                model,
+                r.status_code,
+                r.text[:1000],
+            )
+            try:
+                payload = r.json()
+                detail = payload.get("detail", {})
+                if isinstance(detail, dict):
+                    message = detail.get("message", r.text[:300])
+                else:
+                    message = str(detail)
+            except Exception:
+                message = r.text[:300]
+            raise ChutesAPIError(r.status_code, message) from None
         except Exception:
             logger.exception(
                 "Chutes chat call failed for model %s with status %s and body: %s",

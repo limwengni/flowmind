@@ -1,18 +1,13 @@
 export default function InputBox({ value, onChange, onProcess, isProcessing }) {
   return (
-    <section className="rounded-[26px] border border-white/70 bg-[var(--color-flow-panel)] p-4 shadow-[0_16px_44px_rgba(16,32,51,0.07)] backdrop-blur">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--color-flow-warm)]">
-            Input
-          </p>
-          <h2 className="mt-1.5 text-xl font-semibold text-[var(--color-flow-ink)]">
-            Source Material
-          </h2>
-        </div>
-        <div className="rounded-full bg-white/90 px-3 py-1 text-sm font-medium text-[var(--color-flow-slate)] shadow-sm">
-          Step 1
-        </div>
+    <section className="flex h-full flex-col rounded-[26px] border border-white/70 bg-[var(--color-flow-panel)] p-4 shadow-[0_16px_44px_rgba(16,32,51,0.07)] backdrop-blur">
+      <div>
+        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--color-flow-warm)]">
+          Input
+        </p>
+        <h2 className="mt-1.5 text-xl font-semibold text-[var(--color-flow-ink)]">
+          Source Material
+        </h2>
       </div>
 
       <p className="mt-2.5 max-w-2xl text-base leading-6 text-[var(--color-flow-slate)]">
@@ -20,7 +15,7 @@ export default function InputBox({ value, onChange, onProcess, isProcessing }) {
       </p>
 
       <textarea
-        className="mt-4 min-h-[210px] w-full rounded-[22px] bg-white px-5 py-4 text-base leading-7 text-[var(--color-flow-ink)] shadow-[inset_0_0_0_1px_rgba(215,224,234,0.85)] outline-none transition focus:shadow-[inset_0_0_0_1px_var(--color-flow-warm)]"
+        className="mt-4 min-h-[210px] w-full flex-1 rounded-[22px] bg-white px-5 py-4 text-base leading-7 text-[var(--color-flow-ink)] shadow-[inset_0_0_0_1px_rgba(215,224,234,0.85)] outline-none transition focus:shadow-[inset_0_0_0_1px_var(--color-flow-warm)]"
         placeholder="Paste meeting notes / messy text here"
         value={value}
         onChange={(event) => onChange(event.target.value)}

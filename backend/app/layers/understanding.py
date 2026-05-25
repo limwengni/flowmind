@@ -1,6 +1,6 @@
 import logging
 
-from ..chutes_client import chat_json
+from ..chutes_client import ChutesAPIError, chat_json
 
 MODEL = "Qwen/Qwen3.6-27B-TEE"
 logger = logging.getLogger(__name__)
@@ -28,6 +28,9 @@ def understand_input(raw_input: str, access_token: str) -> dict:
             "input_type": result.get("input_type", "General Notes"),
             "confidence": result.get("confidence", "88%"),
         }
+    except ChutesAPIError:
+        logger.exception("Understanding layer failed due to Chutes API error.")
+        raise
     except Exception:
         logger.exception("Understanding layer failed; using fallback response.")
         return {"input_type": "General Notes", "confidence": "88%"}

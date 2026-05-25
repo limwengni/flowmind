@@ -30,6 +30,44 @@ def _pkce_pair() -> tuple[str, str]:
     return verifier, challenge
 
 
+def _set_auth_cookies(response: Response, access_token: str, refresh_token: Optional[str] = None) -> None:
+    response.set_cookie("access_token", access_token, httponly=True, samesite="lax")
+    if refresh_token:
+        response.set_cookie("refresh_token", refresh_token, httponly=True, samesite="lax")
+
+
+def _refresh_tokens(refresh_token: str) -> dict:
+    with httpx.Client() as client:
+        response = client.post(
+            f"{CHUTES_BASE}/idp/token",
+            data={
+                "grant_type": "refresh_token",
+                "client_id": CLIENT_ID,
+                "client_secret": CLIENT_SECRET,
+                "refresh_token": refresh_token,
+            },
+        )
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=401, detail="Session expired. Please sign in again.")
+
+    return response.json()
+
+
+def _fetch_userinfo(access_token: str) -> Optional[dict]:
+    with httpx.Client() as client:
+        response = client.get(
+            f"{CHUTES_BASE}/idp/userinfo",
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+    if response.status_code == 200:
+        return response.json()
+    if response.status_code == 401:
+        return None
+    raise HTTPException(status_code=502, detail="Could not verify your Chutes session right now.")
+
+
 @router.get("/login")
 def login():
     verifier, challenge = _pkce_pair()
@@ -72,26 +110,36 @@ def callback(code: str, state: str):
 
     tokens = r.json()
     redirect = RedirectResponse(FRONTEND_URL, status_code=302)
-    redirect.set_cookie("access_token", tokens["access_token"], httponly=True, samesite="lax")
-    redirect.set_cookie("refresh_token", tokens["refresh_token"], httponly=True, samesite="lax")
+    _set_auth_cookies(redirect, tokens["access_token"], tokens.get("refresh_token"))
     return redirect
 
 
 @router.get("/me")
-def me(access_token: Optional[str] = Cookie(default=None)):
+def me(
+    response: Response,
+    access_token: Optional[str] = Cookie(default=None),
+    refresh_token: Optional[str] = Cookie(default=None),
+):
     if not access_token:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    with httpx.Client() as client:
-        r = client.get(
-            f"{CHUTES_BASE}/idp/userinfo",
-            headers={"Authorization": f"Bearer {access_token}"},
-        )
+    user = _fetch_userinfo(access_token)
+    if user is not None:
+        return user
 
-    if r.status_code != 200:
-        raise HTTPException(status_code=401, detail="Token invalid or expired")
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Session expired. Please sign in again.")
 
-    return r.json()
+    tokens = _refresh_tokens(refresh_token)
+    new_access_token = tokens["access_token"]
+    new_refresh_token = tokens.get("refresh_token", refresh_token)
+    _set_auth_cookies(response, new_access_token, new_refresh_token)
+
+    user = _fetch_userinfo(new_access_token)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Session expired. Please sign in again.")
+
+    return user
 
 
 @router.post("/logout")
