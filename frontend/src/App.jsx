@@ -156,10 +156,13 @@ export default function App() {
   useEffect(() => {
     if (showOutput && outputData && !didScrollToOutputRef.current) {
       didScrollToOutputRef.current = true;
-      outputSectionRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
+      const frameId = window.requestAnimationFrame(() => {
+        outputSectionRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
       });
+      return () => window.cancelAnimationFrame(frameId);
     }
   }, [showOutput, outputData]);
 
