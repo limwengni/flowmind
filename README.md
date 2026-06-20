@@ -53,6 +53,30 @@ flowmind/
 
 ## Running Locally
 
+### AI Provider
+
+The backend can run with different AI providers through `backend/.env`.
+
+```env
+AI_PROVIDER=mock
+```
+
+Use `mock` when you do not have Chutes credits yet and just need to test the full app flow. Use `chutes` again before challenge judging if Chutes usage is required:
+
+```env
+AI_PROVIDER=chutes
+FLOWMIND_MODEL=Qwen/Qwen3.6-27B-TEE
+```
+
+For temporary Ollama testing:
+
+```env
+AI_PROVIDER=openai_compatible
+FLOWMIND_MODEL=qwen3:8b
+AI_BASE_URL=http://localhost:11434/v1
+AI_API_KEY=ollama
+```
+
 ### Frontend
 
 ```powershell

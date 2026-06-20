@@ -2,18 +2,21 @@ import base64
 import hashlib
 import os
 import secrets
+from pathlib import Path
 from typing import Optional
 from urllib.parse import urlencode
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 import httpx
 from fastapi import APIRouter, Cookie, HTTPException, Response
 from fastapi.responses import RedirectResponse
 
+from .ai_client import active_provider, requires_user_token
+
 CHUTES_BASE = "https://api.chutes.ai"
-CLIENT_ID = os.getenv("CHUTES_CLIENT_ID", "YOUR_CLIENT_ID")
-CLIENT_SECRET = os.getenv("CHUTES_CLIENT_SECRET", "YOUR_CLIENT_SECRET")
+CLIENT_ID = os.getenv("CHUTES_CLIENT_ID", "cid_dlcb9nbfihc5hekai9wcty82")
+CLIENT_SECRET = os.getenv("CHUTES_CLIENT_SECRET", "csc_ZuqH7VgEZPr5LKyvR9ZXzo0cNd0d9qElIZHnMjRF5ekGark4")
 REDIRECT_URI = os.getenv("CHUTES_REDIRECT_URI", "http://localhost:8000/auth/callback")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
@@ -70,6 +73,9 @@ def _fetch_userinfo(access_token: str) -> Optional[dict]:
 
 @router.get("/login")
 def login():
+    if not requires_user_token():
+        return RedirectResponse(FRONTEND_URL)
+
     verifier, challenge = _pkce_pair()
     state = secrets.token_urlsafe(32)
     _pending[state] = verifier
@@ -120,6 +126,12 @@ def me(
     access_token: Optional[str] = Cookie(default=None),
     refresh_token: Optional[str] = Cookie(default=None),
 ):
+    if not requires_user_token() and not access_token:
+        return {
+            "name": "Local tester",
+            "provider": active_provider(),
+        }
+
     if not access_token:
         raise HTTPException(status_code=401, detail="Not authenticated")
 

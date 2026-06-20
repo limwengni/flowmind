@@ -61,13 +61,69 @@ function normalizeStoredColumns(storedColumns) {
 
 function formatDate(dateStr) {
   if (!dateStr) return null;
-  const d = new Date(dateStr);
-  if (isNaN(d)) return dateStr;
-  return d.toLocaleDateString("en-GB", {
+  const cleanDateStr = dateStr.replace(/\s*\(inferred\)\s*/i, "").trim();
+
+  const monthNames = {
+    jan: 0,
+    january: 0,
+    feb: 1,
+    february: 1,
+    mar: 2,
+    march: 2,
+    apr: 3,
+    april: 3,
+    may: 4,
+    jun: 5,
+    june: 5,
+    jul: 6,
+    july: 6,
+    aug: 7,
+    august: 7,
+    sep: 8,
+    sept: 8,
+    september: 8,
+    oct: 9,
+    october: 9,
+    nov: 10,
+    november: 10,
+    dec: 11,
+    december: 11,
+  };
+
+  const numericDate = cleanDateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  const textDate = cleanDateStr.match(/^(\d{1,2})\s+([A-Za-z]+)(?:\s+(\d{4}))?$/);
+
+  let parsedDate = null;
+  if (numericDate) {
+    parsedDate = new Date(
+      Number(numericDate[1]),
+      Number(numericDate[2]) - 1,
+      Number(numericDate[3])
+    );
+  } else if (textDate) {
+    const month = monthNames[textDate[2].toLowerCase()];
+    if (month !== undefined) {
+      parsedDate = new Date(
+        textDate[3] ? Number(textDate[3]) : new Date().getFullYear(),
+        month,
+        Number(textDate[1])
+      );
+    }
+  } else {
+    parsedDate = new Date(cleanDateStr);
+  }
+
+  if (!parsedDate || isNaN(parsedDate)) return cleanDateStr;
+
+  return parsedDate.toLocaleDateString("en-GB", {
     weekday: "short",
     day: "numeric",
     month: "short",
   });
+}
+
+function isInferred(value) {
+  return /\(inferred\)/i.test(value);
 }
 
 function TaskCard({ task, colId, isDragging, onDragStart, onDragEnd, onEdit }) {
@@ -109,6 +165,11 @@ function TaskCard({ task, colId, isDragging, onDragStart, onDragEnd, onEdit }) {
         {task.deadline ? (
           <span className="rounded-full bg-[var(--color-flow-gold)]/40 px-2.5 py-0.5 text-xs font-medium text-amber-900">
             {formatDate(task.deadline)}
+          </span>
+        ) : null}
+        {task.deadline && isInferred(task.deadline) ? (
+          <span className="rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-medium text-violet-700 ring-1 ring-violet-100">
+            Estimated
           </span>
         ) : null}
         {!task.owner && !task.deadline ? (
