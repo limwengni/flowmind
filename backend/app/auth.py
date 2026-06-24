@@ -15,8 +15,8 @@ from fastapi.responses import RedirectResponse
 from .ai_client import active_provider, requires_user_token
 
 CHUTES_BASE = "https://api.chutes.ai"
-CLIENT_ID = os.getenv("CHUTES_CLIENT_ID", "cid_dlcb9nbfihc5hekai9wcty82")
-CLIENT_SECRET = os.getenv("CHUTES_CLIENT_SECRET", "csc_ZuqH7VgEZPr5LKyvR9ZXzo0cNd0d9qElIZHnMjRF5ekGark4")
+CLIENT_ID = os.getenv("CHUTES_CLIENT_ID", "client_id")
+CLIENT_SECRET = os.getenv("CHUTES_CLIENT_SECRET", "client_secret")
 REDIRECT_URI = os.getenv("CHUTES_REDIRECT_URI", "http://localhost:8000/auth/callback")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
