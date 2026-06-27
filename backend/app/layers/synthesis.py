@@ -35,7 +35,7 @@ def synthesize_output(processing_result: dict, access_token: Optional[str]) -> d
                 {"role": "user", "content": context},
             ],
             access_token,
-            max_tokens=1024,
+            max_tokens=4096,
         )
         return {
             **processing_result,

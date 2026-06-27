@@ -15,8 +15,8 @@ from fastapi.responses import RedirectResponse
 from .ai_client import active_provider, requires_user_token
 
 CHUTES_BASE = "https://api.chutes.ai"
-CLIENT_ID = os.getenv("CHUTES_CLIENT_ID", "client_id")
-CLIENT_SECRET = os.getenv("CHUTES_CLIENT_SECRET", "client_secret")
+CLIENT_ID = os.getenv("CHUTES_CLIENT_ID", "")
+CLIENT_SECRET = os.getenv("CHUTES_CLIENT_SECRET", "")
 REDIRECT_URI = os.getenv("CHUTES_REDIRECT_URI", "http://localhost:8000/auth/callback")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
@@ -71,10 +71,37 @@ def _fetch_userinfo(access_token: str) -> Optional[dict]:
     raise HTTPException(status_code=502, detail="Could not verify your Chutes session right now.")
 
 
+def _fetch_user_account(access_token: str) -> Optional[dict]:
+    with httpx.Client() as client:
+        response = client.get(
+            f"{CHUTES_BASE}/users/me",
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+    if response.status_code == 200:
+        return response.json()
+    if response.status_code in {401, 403, 404}:
+        return None
+    raise HTTPException(status_code=502, detail="Could not load your Chutes account right now.")
+
+
+def _fetch_user_quotas(access_token: str) -> Optional[dict]:
+    with httpx.Client() as client:
+        response = client.get(
+            f"{CHUTES_BASE}/users/me/quotas",
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+    if response.status_code == 200:
+        return response.json()
+    if response.status_code in {401, 403, 404}:
+        return None
+    return None
+
 @router.get("/login")
 def login():
     if not requires_user_token():
         return RedirectResponse(FRONTEND_URL)
+    if not CLIENT_ID or not CLIENT_SECRET:
+        raise HTTPException(status_code=500, detail="Chutes OAuth credentials are not configured.")
 
     verifier, challenge = _pkce_pair()
     state = secrets.token_urlsafe(32)
@@ -84,7 +111,7 @@ def login():
         "client_id": CLIENT_ID,
         "redirect_uri": REDIRECT_URI,
         "response_type": "code",
-        "scope": "openid profile chutes:invoke",
+        "scope": "openid profile chutes:invoke balance:read quota:read usage:read",
         "state": state,
         "code_challenge": challenge,
         "code_challenge_method": "S256",
@@ -93,10 +120,16 @@ def login():
 
 
 @router.get("/callback")
-def callback(code: str, state: str):
+def callback(state: str, code: Optional[str] = None, error: Optional[str] = None):
+    if error:
+        raise HTTPException(status_code=400, detail=f"OAuth error: {error}")
+    if not code:
+        raise HTTPException(status_code=400, detail="Missing authorization code")
     verifier = _pending.pop(state, None)
     if verifier is None:
         raise HTTPException(status_code=400, detail="Invalid or expired state")
+    if not CLIENT_ID or not CLIENT_SECRET:
+        raise HTTPException(status_code=500, detail="Chutes OAuth credentials are not configured.")
 
     with httpx.Client() as client:
         r = client.post(
@@ -137,7 +170,9 @@ def me(
 
     user = _fetch_userinfo(access_token)
     if user is not None:
-        return user
+        account = _fetch_user_account(access_token)
+        quotas = _fetch_user_quotas(access_token)
+        return {**user, "chutes_account": account, "chutes_quotas": quotas}
 
     if not refresh_token:
         raise HTTPException(status_code=401, detail="Session expired. Please sign in again.")
@@ -151,7 +186,9 @@ def me(
     if user is None:
         raise HTTPException(status_code=401, detail="Session expired. Please sign in again.")
 
-    return user
+    account = _fetch_user_account(new_access_token)
+    quotas = _fetch_user_quotas(new_access_token)
+    return {**user, "chutes_account": account, "chutes_quotas": quotas}
 
 
 @router.post("/logout")

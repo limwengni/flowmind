@@ -25,7 +25,7 @@ def understand_input(raw_input: str, access_token: Optional[str]) -> dict:
                 {"role": "user", "content": raw_input},
             ],
             access_token,
-            max_tokens=512,
+            max_tokens=4096,
         )
         return {
             "input_type": result.get("input_type", "General Notes"),

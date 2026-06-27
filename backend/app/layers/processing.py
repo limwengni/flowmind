@@ -42,7 +42,7 @@ def process_input_payload(raw_input: str, understanding_result: dict, access_tok
                 {"role": "user", "content": raw_input},
             ],
             access_token,
-            max_tokens=2048,
+            max_tokens=8192,
         )
         return {
             "tasks": result.get("tasks", []),

@@ -1,74 +1,101 @@
 # FlowMind
 
-FlowMind is a structured AI pipeline that transforms messy, unstructured text into execution-ready output.
+FlowMind turns messy, unstructured text — meeting notes, project briefs, random notes — into a structured, execution-ready work card with a summary, task list, timeline, risks, and next action. Tasks are automatically populated into a drag-and-drop Kanban board.
 
-The system is designed around a fixed four-layer flow:
+Built for the Chutes AI Hackathon.
 
-1. Understanding
-2. Processing
-3. Synthesis
-4. Formatting
+## How it works
 
-The output format stays consistent regardless of input type and is intended to produce a structured work card containing:
+The backend runs a four-layer AI pipeline powered by Chutes:
 
-- Summary
-- Tasks
-- Timeline
-- Risks
-- Next Action
+1. **Understanding** — classifies the input type and confidence
+2. **Processing** — extracts tasks, risks, timeline, owners, and deadlines
+3. **Synthesis** — writes a unified summary and picks the next action
+4. **Formatting** — validates the schema and fills any missing fallback values
 
-## Current Status
-
-This repository currently contains:
-
-- a mock React frontend UI
-- a placeholder FastAPI backend
-- static demo data
-- an initial frontend and backend project structure
-
-No real AI pipeline logic or live API integration has been implemented yet.
+Authentication uses **Sign in with Chutes** (OAuth 2.0 + PKCE). Each user signs in with their own Chutes account — AI usage bills to their account, not the app owner's.
 
 ## Tech Stack
 
-- Frontend: React + Vite + TailwindCSS
-- Backend: FastAPI + Python
+- **Frontend:** React + Vite + TailwindCSS
+- **Backend:** FastAPI + Python
+- **AI:** Chutes (`Qwen/Qwen3.6-27B-TEE`) via user OAuth token
+- **Auth:** Chutes OAuth 2.0 with PKCE
 
 ## Project Structure
 
-```text
+```
 flowmind/
 ├── backend/
 │   ├── app/
-│   │   ├── layers/
+│   │   ├── layers/         # understanding, processing, synthesis, formatting
+│   │   ├── ai_client.py    # Chutes / OpenAI-compatible chat client
+│   │   ├── auth.py         # OAuth flow: login, callback, me, logout
 │   │   ├── main.py
 │   │   ├── models.py
 │   │   └── orchestrator.py
+│   ├── .env.example
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
+│   │   ├── components/     # InputBox, KanbanBoard, LoginPage, OutputCard, PipelineVisualizer
+│   │   └── App.jsx
 │   ├── package.json
 │   └── vite.config.js
+├── archive/                # planning docs from development
 └── README.md
 ```
 
 ## Running Locally
 
-### AI Provider
+### 1. Register your OAuth app on Chutes
 
-The backend can run with different AI providers through `backend/.env`.
+Go to your Chutes account → OAuth Apps and create a new app with:
+- Redirect URI: `http://localhost:8000/auth/callback`
+- Scopes: `openid`, `profile`, `chutes:invoke`, `balance:read`, `quota:read`, `usage:read`
 
-```env
-AI_PROVIDER=mock
+Save the `client_id` and `client_secret`.
+
+### 2. Configure environment variables
+
+```bash
+cp backend/.env.example backend/.env
 ```
 
-Use `mock` when you do not have Chutes credits yet and just need to test the full app flow. Use `chutes` again before challenge judging if Chutes usage is required:
+Fill in `backend/.env`:
 
 ```env
+CHUTES_CLIENT_ID=cid_xxx
+CHUTES_CLIENT_SECRET=csc_xxx
+CHUTES_REDIRECT_URI=http://localhost:8000/auth/callback
+FRONTEND_URL=http://localhost:5173
 AI_PROVIDER=chutes
 FLOWMIND_MODEL=Qwen/Qwen3.6-27B-TEE
 ```
 
-For temporary Ollama testing:
+### 3. Start the backend
+
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+### 4. Start the frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173` — sign in with your Chutes account to use the pipeline.
+
+---
+
+### Alternative: Ollama (local, no Chutes account needed)
 
 ```env
 AI_PROVIDER=openai_compatible
@@ -77,26 +104,17 @@ AI_BASE_URL=http://localhost:11434/v1
 AI_API_KEY=ollama
 ```
 
-### Frontend
+Set `VITE_DEBUG_PREVIEW=true` in `frontend/.env` to skip login and use demo output.
 
-```powershell
-cd C:\Users\lim12\Documents\flowmind\frontend
-npm install
-npm run dev
-```
+## Environment Variables
 
-### Backend
-
-```powershell
-cd C:\Users\lim12\Documents\flowmind\backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
-
-## Notes
-
-- This project currently uses mock data and placeholder application logic.
-- The frontend and backend are not fully integrated yet.
-- The current `/process` endpoint returns mock structured output only.
+| Variable | Description |
+|---|---|
+| `CHUTES_CLIENT_ID` | OAuth app client ID from Chutes |
+| `CHUTES_CLIENT_SECRET` | OAuth app client secret from Chutes |
+| `CHUTES_REDIRECT_URI` | Must match the redirect URI registered on Chutes |
+| `FRONTEND_URL` | Where to redirect after login (e.g. `http://localhost:5173`) |
+| `AI_PROVIDER` | `chutes` or `openai_compatible` |
+| `FLOWMIND_MODEL` | Model ID to use (default: `Qwen/Qwen3.6-27B-TEE`) |
+| `AI_BASE_URL` | Base URL for OpenAI-compatible providers |
+| `AI_API_KEY` | API key for OpenAI-compatible providers |

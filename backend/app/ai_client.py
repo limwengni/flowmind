@@ -94,15 +94,17 @@ def chat(
     try:
         response.raise_for_status()
         payload = response.json()
-        # print("FULL PAYLOAD:", json.dumps(payload, indent=2)[:1000])  # add this
         message = payload["choices"][0]["message"]
+        logger.debug("Raw model message keys: %s", list(message.keys()))
         content = message.get("content", "").strip()
         
-        # Qwen3 sometimes puts output in reasoning instead of content for complex tasks
+        # Chutes uses reasoning_content; Ollama uses reasoning
         if not content:
-            reasoning = message.get("reasoning", "").strip()
-            json_match = re.search(r'\{.*\}', reasoning, re.DOTALL)
-            content = json_match.group(0) if json_match else reasoning
+            reasoning = (message.get("reasoning_content") or message.get("reasoning") or "").strip()
+            # find all JSON-like objects, skip template placeholders, take the last real one
+            candidates = re.findall(r'\{[^{}]*\}', reasoning, re.DOTALL)
+            real = [c for c in candidates if '<' not in c]
+            content = real[-1] if real else reasoning
 
         return content
     except httpx.HTTPStatusError:
@@ -129,11 +131,16 @@ def chat_json(
     max_tokens: int = 1024,
 ) -> dict:
     raw = chat(messages, user_access_token, max_tokens).strip()
-    
-    # strip Qwen3 thinking blocks
+
+    # save thinking content before stripping, in case content is empty after
+    think_match = re.search(r"<think>(.*?)</think>", raw, flags=re.DOTALL)
     raw = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
-    
-    # print("RAW OUTPUT:", raw[:500])  # or just print for now
+
+    # if model put everything inside <think>, extract JSON from there
+    if not raw and think_match:
+        thinking = think_match.group(1).strip()
+        json_match = re.search(r"\{.*\}", thinking, re.DOTALL)
+        raw = json_match.group(0) if json_match else ""
 
     if raw.startswith("```"):
         parts = raw.split("```")

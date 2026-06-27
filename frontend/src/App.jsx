@@ -321,10 +321,15 @@ export default function App() {
                 Structured AI pipeline for turning messy notes into execution-ready output.
               </p>
             </div>
-            <div className="flex shrink-0 flex-col items-end gap-1 pt-1">
+            <div className="flex shrink-0 flex-col items-end gap-2 pt-1">
               <p className="text-sm font-medium text-[var(--color-flow-slate)]">
                 {user.username ?? user.name ?? user.email}
               </p>
+              {user.chutes_quotas?.[0]?.quota != null && (
+                <span className="rounded-full bg-[var(--color-flow-ink)]/5 px-3 py-0.5 text-xs font-medium text-[var(--color-flow-ink)]">
+                  {user.chutes_quotas[0].quota.toLocaleString()} req/day
+                </span>
+              )}
               <button
                 onClick={handleLogout}
                 className="text-xs text-[var(--color-flow-slate)] underline underline-offset-2 hover:text-[var(--color-flow-ink)] transition-colors"
