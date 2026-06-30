@@ -1,6 +1,8 @@
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+
 export default function LoginPage() {
   function handleLogin() {
-    window.location.href = "http://localhost:8000/auth/login";
+    window.location.href = `${API_BASE}/auth/login`;
   }
 
   return (

@@ -74,6 +74,8 @@ const previewOutputData = normalizeOutput({
   next_action: "Lock the final launch scope and assign one owner to each blocker today.",
 });
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+
 const debugPreviewEnabled = import.meta.env.VITE_DEBUG_PREVIEW === "true";
 
 async function readErrorMessage(response, fallbackMessage) {
@@ -122,7 +124,7 @@ export default function App() {
     const timeoutId = window.setTimeout(() => controller.abort(), 4000);
     let ignore = false;
 
-    fetch("http://localhost:8000/auth/me", {
+    fetch(`${API_BASE}/auth/me`, {
       credentials: "include",
       signal: controller.signal,
     })
@@ -167,7 +169,7 @@ export default function App() {
   }, [showOutput, outputData]);
 
   async function handleLogout() {
-    await fetch("http://localhost:8000/auth/logout", {
+    await fetch(`${API_BASE}/auth/logout`, {
       method: "POST",
       credentials: "include",
     });
@@ -215,7 +217,7 @@ export default function App() {
     didScrollToOutputRef.current = false;
 
     try {
-      const understandingResponse = await fetch("http://localhost:8000/understand", {
+      const understandingResponse = await fetch(`${API_BASE}/understand`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -249,7 +251,7 @@ export default function App() {
         setTimeout(() => setActiveLayer(3), 2400),
       ];
 
-      const response = await fetch("http://localhost:8000/process-from-understanding", {
+      const response = await fetch(`${API_BASE}/process-from-understanding`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

@@ -1,7 +1,8 @@
+import os
 from typing import Optional
 from pathlib import Path
 
-from fastapi import Cookie, FastAPI, HTTPException
+from fastapi import APIRouter, Cookie, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -17,15 +18,19 @@ except ImportError:
 
 app = FastAPI(title="FlowMind API")
 
+_frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[_frontend_url, "http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.include_router(auth_router)
+API_PREFIX = os.getenv("API_PREFIX", "")
+app.include_router(auth_router, prefix=API_PREFIX)
+
+router = APIRouter(prefix=API_PREFIX)
 
 
 class ProcessRequest(BaseModel):
@@ -43,7 +48,7 @@ class ProcessWithUnderstandingRequest(BaseModel):
     confidence: str
 
 
-@app.get("/health")
+@router.get("/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
@@ -71,7 +76,7 @@ def _raise_pipeline_error(error: PipelineAPIError) -> None:
     )
 
 
-@app.post("/understand", tags=["FlowMind"], summary="Classify the input and return initial confidence")
+@router.post("/understand", tags=["FlowMind"], summary="Classify the input and return initial confidence")
 def understand_only(
     payload: ProcessRequest,
     access_token: Optional[str] = Cookie(default=None),
@@ -83,7 +88,7 @@ def understand_only(
         _raise_pipeline_error(error)
 
 
-@app.post("/process", tags=["FlowMind"], summary="Process raw text into a work card")
+@router.post("/process", tags=["FlowMind"], summary="Process raw text into a work card")
 def process_input(
     payload: ProcessRequest,
     access_token: Optional[str] = Cookie(default=None),
@@ -95,7 +100,7 @@ def process_input(
         _raise_pipeline_error(error)
 
 
-@app.post("/process-from-understanding", tags=["FlowMind"], summary="Process the remaining pipeline layers")
+@router.post("/process-from-understanding", tags=["FlowMind"], summary="Process the remaining pipeline layers")
 def process_from_understanding(
     payload: ProcessWithUnderstandingRequest,
     access_token: Optional[str] = Cookie(default=None),
@@ -109,3 +114,6 @@ def process_from_understanding(
         return build_work_card_from_understanding(payload.raw_input, understanding_result, access_token)
     except PipelineAPIError as error:
         _raise_pipeline_error(error)
+
+
+app.include_router(router)
