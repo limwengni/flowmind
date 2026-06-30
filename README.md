@@ -1,5 +1,7 @@
 # FlowMind
 
+**Live:** https://flowmind-alpha.vercel.app
+
 FlowMind turns messy, unstructured text — meeting notes, project briefs, random notes — into a structured, execution-ready work card with a summary, task list, timeline, risks, and next action. Tasks are automatically populated into a drag-and-drop Kanban board.
 
 Built for the Chutes AI Hackathon.
@@ -106,7 +108,27 @@ AI_API_KEY=ollama
 
 Set `VITE_DEBUG_PREVIEW=true` in `frontend/.env` to skip login and use demo output.
 
-## Environment Variables
+## Deployment (Vercel)
+
+Both services deploy from the same repo via `vercel.json`. The frontend and backend are served from the same domain — all `/api/*` requests are routed to the FastAPI backend.
+
+**Backend env vars (Vercel):**
+
+| Variable | Value |
+|---|---|
+| `CHUTES_CLIENT_ID` | Your Chutes OAuth client ID |
+| `CHUTES_CLIENT_SECRET` | Your Chutes OAuth client secret |
+| `CHUTES_REDIRECT_URI` | `https://flowmind-alpha.vercel.app/api/auth/callback` |
+| `FRONTEND_URL` | `https://flowmind-alpha.vercel.app` |
+| `API_PREFIX` | `/api` |
+
+**Frontend env vars (Vercel):**
+
+| Variable | Value |
+|---|---|
+| `VITE_API_BASE_URL` | `/api` |
+
+## Environment Variables (Local)
 
 | Variable | Description |
 |---|---|
