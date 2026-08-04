@@ -27,7 +27,6 @@ Paste meeting notes, project briefs, or unstructured updates. FlowMind extracts 
 - [Run locally](#run-locally)
 - [Demo-only configuration](#demo-only-configuration)
 - [Deployment](#deployment)
-- [License](#license)
 
 </details>
 
@@ -196,8 +195,4 @@ FLOWMIND_MODEL=Qwen/Qwen3.6-27B-TEE
 ```
 
 For a no-credit showcase deployment, use `AI_PROVIDER=mock` instead.
-
-## License
-
-FlowMind is released under the [MIT License](LICENSE).
 
