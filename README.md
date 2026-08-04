@@ -1,145 +1,188 @@
 # FlowMind
 
-**Live:** https://flowmind-alpha.vercel.app
+**Turn messy notes into execution-ready work.**
+**A structured AI pipeline for summaries, tasks, timelines, risks, and next actions.**
+Paste meeting notes, project briefs, or unstructured updates. FlowMind extracts the signal, validates the structure, and turns it into a work card your team can act on.
 
-FlowMind turns messy, unstructured text — meeting notes, project briefs, random notes — into a structured, execution-ready work card with a summary, task list, timeline, risks, and next action. Tasks are automatically populated into a drag-and-drop Kanban board.
+[![2nd Place — Corporate Track](https://img.shields.io/badge/2nd%20Place-Corporate%20Track-D6A84F?style=for-the-badge)](https://devpost.com/software/flowmind-t24fai)
+[![Chutes Hack Malaysia 2026](https://img.shields.io/badge/Chutes%20Hack%20Malaysia-2026-2E7D5B?style=for-the-badge)](https://devpost.com/software/flowmind-t24fai)
+[![Devpost](https://img.shields.io/badge/Devpost-FlowMind-003E54?style=for-the-badge&logo=devpost&logoColor=white)](https://devpost.com/software/flowmind-t24fai)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-111827?style=for-the-badge&logo=vercel&logoColor=white)](https://flowmind-alpha.vercel.app/)
 
-Built for the Chutes AI Hackathon.
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=111827)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
+[![Chutes](https://img.shields.io/badge/AI-Chutes-2E7D5B?style=for-the-badge)](https://chutes.ai/)
+
+**[Watch the Demo](https://www.youtube.com/watch?v=JBIYzOc5Atc&source_ve_path=MjE0Mjgz&embeds_referring_euri=https%3A%2F%2Fdevpost.com%2F)** · **[Devpost](https://devpost.com/software/flowmind-t24fai)** · **[Pitch Deck](archive/FlowMind_Presentation.pdf)** · **[Live App](https://flowmind-alpha.vercel.app/)** · **[Source Code](https://github.com/limwengni/flowmind)**
+
+## What FlowMind does
+
+Unstructured input often contains the information a team needs, but not in a form that is easy to execute. FlowMind extracts the signal and organizes it into a practical action plan.
+
+- Classifies the input and estimates confidence
+- Extracts tasks, owners, deadlines, risks, and timeline items
+- Synthesizes the extracted information into one work card
+- Validates the final response against a predictable schema
+- Populates detected tasks into a drag-and-drop Kanban board
 
 ## How it works
 
-The backend runs a four-layer AI pipeline powered by Chutes:
-
-1. **Understanding** — classifies the input type and confidence
-2. **Processing** — extracts tasks, risks, timeline, owners, and deadlines
-3. **Synthesis** — writes a unified summary and picks the next action
-4. **Formatting** — validates the schema and fills any missing fallback values
-
-Authentication uses **Sign in with Chutes** (OAuth 2.0 + PKCE). Each user signs in with their own Chutes account — AI usage bills to their account, not the app owner's.
-
-## Tech Stack
-
-- **Frontend:** React + Vite + TailwindCSS
-- **Backend:** FastAPI + Python
-- **AI:** Chutes (`Qwen/Qwen3.6-27B-TEE`) via user OAuth token
-- **Auth:** Chutes OAuth 2.0 with PKCE
-
-## Project Structure
-
+```text
+Messy notes
+    ↓
+1. Understanding       Classify the document and select the analysis path
+    ↓
+2. Processing          Extract tasks, risks, timeline items, and ownership
+    ↓
+3. Synthesis           Combine the extracted information into one work card
+    ↓
+4. Schema validation   Check the structure and prepare the final response
+    ↓
+Execution-ready output
 ```
+
+The interface visualizes each layer as it runs, so users can see how raw notes become structured output.
+
+## Screenshots
+
+### Sign in
+
+![FlowMind sign-in screen](docs/screenshots/login.png)
+
+### Pipeline running
+
+![FlowMind pipeline running](docs/screenshots/pipeline-running.png)
+
+### Pipeline complete
+
+![FlowMind pipeline complete](docs/screenshots/pipeline-complete.png)
+
+### Structured output
+
+![FlowMind output card](docs/screenshots/output-card.png)
+
+## Demo access
+
+The **Continue as guest** path uses FlowMind’s built-in deterministic demo provider, so visitors can explore the workflow without a Chutes account, API key, Ollama installation, or credits. Guest work is not saved.
+
+Users who sign in with Chutes use the real Chutes-backed pipeline and their own account access.
+
+## Tech stack
+
+- **Frontend:** React, Vite, Tailwind CSS
+- **Backend:** FastAPI, Python
+- **AI:** Chutes with `Qwen/Qwen3.6-27B-TEE`
+- **Authentication:** Chutes OAuth 2.0 with PKCE
+- **Deployment:** Vercel
+
+## Project structure
+
+```text
 flowmind/
 ├── backend/
 │   ├── app/
-│   │   ├── layers/         # understanding, processing, synthesis, formatting
-│   │   ├── ai_client.py    # Chutes / OpenAI-compatible chat client
-│   │   ├── auth.py         # OAuth flow: login, callback, me, logout
-│   │   ├── main.py
-│   │   ├── models.py
-│   │   └── orchestrator.py
-│   ├── .env.example
-│   └── requirements.txt
+│   │   ├── layers/          # Understanding, processing, synthesis, formatting
+│   │   ├── ai_client.py     # Chutes, compatible providers, and demo provider
+│   │   ├── auth.py          # OAuth, guest session, and logout routes
+│   │   ├── main.py          # FastAPI routes
+│   │   └── orchestrator.py  # Pipeline coordination
+│   └── .env.example
 ├── frontend/
-│   ├── src/
-│   │   ├── components/     # InputBox, KanbanBoard, LoginPage, OutputCard, PipelineVisualizer
-│   │   └── App.jsx
-│   ├── package.json
-│   └── vite.config.js
-├── archive/                # planning docs from development
+│   └── src/
+│       ├── components/      # Input, pipeline, output, Kanban, login
+│       └── App.jsx
+├── docs/
+│   ├── screenshots/         # Product screenshots
+│   ├── AUTH_PLAN.md
+│   ├── CHUTES_AUTH.md
+│   └── HACKATHON_NEXT_STEPS.md
 └── README.md
 ```
 
-## Running Locally
+Project planning and authentication notes live in [`docs/`](docs/). The pitch deck is available at [`archive/FlowMind_Presentation.pdf`](archive/FlowMind_Presentation.pdf).
 
-### 1. Register your OAuth app on Chutes
+## Run locally
 
-Go to your Chutes account → OAuth Apps and create a new app with:
-- Redirect URI: `http://localhost:8000/auth/callback`
-- Scopes: `openid`, `profile`, `chutes:invoke`, `balance:read`, `quota:read`, `usage:read`
+### 1. Configure the backend
 
-Save the `client_id` and `client_secret`.
-
-### 2. Configure environment variables
-
-```bash
-cp backend/.env.example backend/.env
+```powershell
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 ```
 
-Fill in `backend/.env`:
+Create `backend/.env`:
 
 ```env
 CHUTES_CLIENT_ID=cid_xxx
 CHUTES_CLIENT_SECRET=csc_xxx
-CHUTES_API_KEY=cpk_xxx
-CHUTES_REDIRECT_URI=http://localhost:8000/auth/callback
+CHUTES_REDIRECT_URI=http://localhost:8000/api/auth/callback
 FRONTEND_URL=http://localhost:5173
+API_PREFIX=/api
 AI_PROVIDER=chutes
 FLOWMIND_MODEL=Qwen/Qwen3.6-27B-TEE
 ```
 
-### 3. Start the backend
+Start the API:
 
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+```powershell
+python -m uvicorn app.main:app --reload
 ```
 
-### 4. Start the frontend
+### 2. Start the frontend
 
-```bash
+In a second terminal:
+
+```powershell
 cd frontend
 npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` — sign in with your Chutes account to use the pipeline.
-
----
-
-### Alternative: Ollama (local, no Chutes account needed)
+For local development, set `frontend/.env` to:
 
 ```env
-AI_PROVIDER=openai_compatible
-FLOWMIND_MODEL=qwen3:8b
-AI_BASE_URL=http://localhost:11434/v1
-AI_API_KEY=ollama
+VITE_API_BASE_URL=http://localhost:8000/api
+VITE_DEBUG_PREVIEW=false
 ```
 
-Set `VITE_DEBUG_PREVIEW=true` in `frontend/.env` to skip login and use demo output.
+Open [http://localhost:5173](http://localhost:5173).
 
-## Deployment (Vercel)
+## Demo-only configuration
 
-Both services deploy from the same repo via `vercel.json`. The frontend and backend are served from the same domain — all `/api/*` requests are routed to the FastAPI backend.
+To run the full app without Chutes access, use the built-in provider:
 
-**Backend env vars (Vercel):**
+```env
+AI_PROVIDER=mock
+```
 
-| Variable | Value |
-|---|---|
-| `CHUTES_CLIENT_ID` | Your Chutes OAuth client ID |
-| `CHUTES_CLIENT_SECRET` | Your Chutes OAuth client secret |
-| `CHUTES_API_KEY` | Server-side Chutes API key used for guest AI access |
-| `CHUTES_REDIRECT_URI` | `https://flowmind-alpha.vercel.app/api/auth/callback` |
-| `FRONTEND_URL` | `https://flowmind-alpha.vercel.app` |
-| `API_PREFIX` | `/api` |
+This does not call Ollama or any external API. It returns deterministic sample output for demos and testing.
 
-**Frontend env vars (Vercel):**
+## Deployment
 
-| Variable | Value |
-|---|---|
-| `VITE_API_BASE_URL` | `/api` |
+The project is configured for Vercel. The production frontend uses:
 
-## Environment Variables (Local)
+```env
+VITE_API_BASE_URL=/api
+```
 
-| Variable | Description |
-|---|---|
-| `CHUTES_CLIENT_ID` | OAuth app client ID from Chutes |
-| `CHUTES_CLIENT_SECRET` | OAuth app client secret from Chutes |
-| `CHUTES_API_KEY` | Server-side Chutes API key used for guest AI access |
-| `CHUTES_REDIRECT_URI` | Must match the redirect URI registered on Chutes |
-| `FRONTEND_URL` | Where to redirect after login (e.g. `http://localhost:5173`) |
-| `AI_PROVIDER` | `chutes` or `openai_compatible` |
-| `FLOWMIND_MODEL` | Model ID to use (default: `Qwen/Qwen3.6-27B-TEE`) |
-| `AI_BASE_URL` | Base URL for OpenAI-compatible providers |
-| `AI_API_KEY` | API key for OpenAI-compatible providers |
+The backend should be configured with:
+
+```env
+CHUTES_CLIENT_ID=cid_xxx
+CHUTES_CLIENT_SECRET=csc_xxx
+CHUTES_REDIRECT_URI=https://flowmind-alpha.vercel.app/api/auth/callback
+FRONTEND_URL=https://flowmind-alpha.vercel.app
+API_PREFIX=/api
+AI_PROVIDER=chutes
+FLOWMIND_MODEL=Qwen/Qwen3.6-27B-TEE
+```
+
+For a no-credit showcase deployment, use `AI_PROVIDER=mock` instead.
+
+## License
+
+See the repository for the current project license and hackathon materials.
