@@ -69,6 +69,7 @@ Fill in `backend/.env`:
 ```env
 CHUTES_CLIENT_ID=cid_xxx
 CHUTES_CLIENT_SECRET=csc_xxx
+CHUTES_API_KEY=cpk_xxx
 CHUTES_REDIRECT_URI=http://localhost:8000/auth/callback
 FRONTEND_URL=http://localhost:5173
 AI_PROVIDER=chutes
@@ -118,6 +119,7 @@ Both services deploy from the same repo via `vercel.json`. The frontend and back
 |---|---|
 | `CHUTES_CLIENT_ID` | Your Chutes OAuth client ID |
 | `CHUTES_CLIENT_SECRET` | Your Chutes OAuth client secret |
+| `CHUTES_API_KEY` | Server-side Chutes API key used for guest AI access |
 | `CHUTES_REDIRECT_URI` | `https://flowmind-alpha.vercel.app/api/auth/callback` |
 | `FRONTEND_URL` | `https://flowmind-alpha.vercel.app` |
 | `API_PREFIX` | `/api` |
@@ -134,6 +136,7 @@ Both services deploy from the same repo via `vercel.json`. The frontend and back
 |---|---|
 | `CHUTES_CLIENT_ID` | OAuth app client ID from Chutes |
 | `CHUTES_CLIENT_SECRET` | OAuth app client secret from Chutes |
+| `CHUTES_API_KEY` | Server-side Chutes API key used for guest AI access |
 | `CHUTES_REDIRECT_URI` | Must match the redirect URI registered on Chutes |
 | `FRONTEND_URL` | Where to redirect after login (e.g. `http://localhost:5173`) |
 | `AI_PROVIDER` | `chutes` or `openai_compatible` |

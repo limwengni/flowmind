@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 CHUTES_MODEL = "Qwen/Qwen3.6-27B-TEE"
 OPENAI_MODEL = "gpt-4o-mini"
+GUEST_ACCESS_TOKEN = "__flowmind_guest_demo__"
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 
@@ -60,6 +61,9 @@ def chat(
     max_tokens: int = 1024,
     temperature: float = 0.3,
 ) -> str:
+    if user_access_token == GUEST_ACCESS_TOKEN:
+        return json.dumps(_mock_json(messages))
+
     provider = active_provider()
     if provider == "mock":
         return json.dumps(_mock_json(messages))

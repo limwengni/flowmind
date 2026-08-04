@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from .ai_client import PipelineAPIError, active_provider, requires_user_token
-from .auth import router as auth_router
+from .auth import guest_access_token, router as auth_router
 from .orchestrator import build_understanding, build_work_card, build_work_card_from_understanding
 
 try:
@@ -53,8 +53,12 @@ def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
 
-def _require_session(access_token: Optional[str]) -> None:
-    if requires_user_token() and not access_token:
+def _resolve_access_token(access_token: Optional[str], guest_session: Optional[str]) -> Optional[str]:
+    return access_token or guest_access_token(guest_session)
+
+
+def _require_session(access_token: Optional[str], guest_session: Optional[str]) -> None:
+    if requires_user_token() and not _resolve_access_token(access_token, guest_session):
         raise HTTPException(status_code=401, detail="Not authenticated")
 
 
@@ -80,10 +84,12 @@ def _raise_pipeline_error(error: PipelineAPIError) -> None:
 def understand_only(
     payload: ProcessRequest,
     access_token: Optional[str] = Cookie(default=None),
+    guest_session: Optional[str] = Cookie(default=None),
 ) -> UnderstandingResponse:
-    _require_session(access_token)
+    resolved_access_token = _resolve_access_token(access_token, guest_session)
+    _require_session(access_token, guest_session)
     try:
-        return build_understanding(payload.raw_input, access_token)
+        return build_understanding(payload.raw_input, resolved_access_token)
     except PipelineAPIError as error:
         _raise_pipeline_error(error)
 
@@ -92,10 +98,12 @@ def understand_only(
 def process_input(
     payload: ProcessRequest,
     access_token: Optional[str] = Cookie(default=None),
+    guest_session: Optional[str] = Cookie(default=None),
 ) -> dict:
-    _require_session(access_token)
+    resolved_access_token = _resolve_access_token(access_token, guest_session)
+    _require_session(access_token, guest_session)
     try:
-        return build_work_card(payload.raw_input, access_token)
+        return build_work_card(payload.raw_input, resolved_access_token)
     except PipelineAPIError as error:
         _raise_pipeline_error(error)
 
@@ -104,14 +112,16 @@ def process_input(
 def process_from_understanding(
     payload: ProcessWithUnderstandingRequest,
     access_token: Optional[str] = Cookie(default=None),
+    guest_session: Optional[str] = Cookie(default=None),
 ) -> dict:
-    _require_session(access_token)
+    resolved_access_token = _resolve_access_token(access_token, guest_session)
+    _require_session(access_token, guest_session)
     understanding_result = {
         "input_type": payload.input_type,
         "confidence": payload.confidence,
     }
     try:
-        return build_work_card_from_understanding(payload.raw_input, understanding_result, access_token)
+        return build_work_card_from_understanding(payload.raw_input, understanding_result, resolved_access_token)
     except PipelineAPIError as error:
         _raise_pipeline_error(error)
 

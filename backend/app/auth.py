@@ -12,18 +12,26 @@ import httpx
 from fastapi import APIRouter, Cookie, HTTPException, Response
 from fastapi.responses import RedirectResponse
 
-from .ai_client import active_provider, requires_user_token
+from .ai_client import GUEST_ACCESS_TOKEN, active_provider, requires_user_token
 
 CHUTES_BASE = "https://api.chutes.ai"
 CLIENT_ID = os.getenv("CHUTES_CLIENT_ID", "")
 CLIENT_SECRET = os.getenv("CHUTES_CLIENT_SECRET", "")
 REDIRECT_URI = os.getenv("CHUTES_REDIRECT_URI", "http://localhost:8000/auth/callback")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+GUEST_COOKIE = "guest_session"
 
 # state -> code_verifier, lives only for the duration of the OAuth round-trip
 _pending: dict[str, str] = {}
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
+
+
+def guest_access_token(guest_session: Optional[str]) -> Optional[str]:
+    """Resolve the built-in demo access token for a valid guest session."""
+    if guest_session != "1":
+        return None
+    return GUEST_ACCESS_TOKEN
 
 
 def _pkce_pair() -> tuple[str, str]:
@@ -158,7 +166,16 @@ def me(
     response: Response,
     access_token: Optional[str] = Cookie(default=None),
     refresh_token: Optional[str] = Cookie(default=None),
+    guest_session: Optional[str] = Cookie(default=None),
 ):
+    if guest_session == "1" and not access_token:
+        return {
+            "name": "Guest",
+            "username": "Guest demo mode",
+            "guest": True,
+            "provider": "mock",
+        }
+
     if not requires_user_token() and not access_token:
         return {
             "name": "Local tester",
@@ -195,4 +212,11 @@ def me(
 def logout(response: Response):
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
+    response.delete_cookie(GUEST_COOKIE)
     return {"ok": True}
+
+
+@router.post("/guest")
+def guest(response: Response):
+    response.set_cookie(GUEST_COOKIE, "1", httponly=True, samesite="lax")
+    return {"ok": True, "guest": True}

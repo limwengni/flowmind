@@ -1,8 +1,32 @@
+import { useState } from "react";
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 export default function LoginPage() {
+  const [isGuestLoading, setIsGuestLoading] = useState(false);
+  const [guestError, setGuestError] = useState("");
+
   function handleLogin() {
     window.location.href = `${API_BASE}/auth/login`;
+  }
+
+  async function handleGuest() {
+    setIsGuestLoading(true);
+    setGuestError("");
+    try {
+      const response = await fetch(`${API_BASE}/auth/guest`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        throw new Error(payload?.detail || "Demo mode is unavailable right now.");
+      }
+      window.location.reload();
+    } catch (error) {
+      setGuestError(error instanceof Error ? error.message : "Demo mode is unavailable right now.");
+      setIsGuestLoading(false);
+    }
   }
 
   return (
@@ -21,6 +45,22 @@ export default function LoginPage() {
           >
             Sign in with Chutes
           </button>
+          <div className="flex w-full items-center gap-3 text-xs text-[var(--color-flow-slate)]">
+            <span className="h-px flex-1 bg-slate-200" />
+            or
+            <span className="h-px flex-1 bg-slate-200" />
+          </div>
+          <button
+            onClick={handleGuest}
+            disabled={isGuestLoading}
+            className="w-full rounded-2xl border border-[var(--color-flow-ink)]/15 bg-white/70 px-6 py-3 text-base font-semibold text-[var(--color-flow-ink)] transition hover:bg-white disabled:cursor-wait disabled:opacity-60"
+          >
+            {isGuestLoading ? "Starting demo…" : "Continue as guest"}
+          </button>
+          {guestError ? <p className="text-sm text-rose-700">{guestError}</p> : null}
+          <p className="text-xs leading-5 text-[var(--color-flow-slate)]">
+            Try FlowMind with sample AI output. Your work is not saved.
+          </p>
         </div>
       </div>
     </div>
