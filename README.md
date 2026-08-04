@@ -4,18 +4,32 @@
 **A structured AI pipeline for summaries, tasks, timelines, risks, and next actions.**
 Paste meeting notes, project briefs, or unstructured updates. FlowMind extracts the signal, validates the structure, and turns it into a work card your team can act on.
 
-[![2nd Place — Corporate Track](https://img.shields.io/badge/2nd%20Place-Corporate%20Track-D6A84F?style=for-the-badge)](https://devpost.com/software/flowmind-t24fai)
-[![Chutes Hack Malaysia 2026](https://img.shields.io/badge/Chutes%20Hack%20Malaysia-2026-2E7D5B?style=for-the-badge)](https://devpost.com/software/flowmind-t24fai)
-[![Devpost](https://img.shields.io/badge/Devpost-FlowMind-003E54?style=for-the-badge&logo=devpost&logoColor=white)](https://devpost.com/software/flowmind-t24fai)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-111827?style=for-the-badge&logo=vercel&logoColor=white)](https://flowmind-alpha.vercel.app/)
+[![2nd Place — Corporate Track](https://img.shields.io/badge/2nd%20Place-Corporate%20Track-E07A35?labelColor=102033&style=for-the-badge)](https://devpost.com/software/flowmind-t24fai)
+[![Chutes Hack Malaysia 2026](https://img.shields.io/badge/Chutes%20Hack%20Malaysia-2026-5EADE2?labelColor=102033&style=for-the-badge)](https://chutes-hack-malaysia-2026.devpost.com/)
 
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=111827)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
-[![Chutes](https://img.shields.io/badge/AI-Chutes-2E7D5B?style=for-the-badge)](https://chutes.ai/)
+[![Inference Chutes TEE](https://img.shields.io/badge/Inference-Chutes%20TEE-5EADE2?labelColor=102033&style=for-the-badge)](https://chutes.ai/)
 
-**[Watch the Demo](https://www.youtube.com/watch?v=JBIYzOc5Atc&source_ve_path=MjE0Mjgz&embeds_referring_euri=https%3A%2F%2Fdevpost.com%2F)** · **[Devpost](https://devpost.com/software/flowmind-t24fai)** · **[Pitch Deck](archive/FlowMind_Presentation.pdf)** · **[Live App](https://flowmind-alpha.vercel.app/)** · **[Source Code](https://github.com/limwengni/flowmind)**
+**[Watch the Demo](https://www.youtube.com/watch?v=JBIYzOc5Atc&source_ve_path=MjE0Mjgz&embeds_referring_euri=https%3A%2F%2Fdevpost.com%2F)** · **[Devpost](https://devpost.com/software/flowmind-t24fai)** · **[Pitch Deck](archive/FlowMind_Presentation.pdf)** · **[Live App](https://flowmind-alpha.vercel.app/)**
+
+<details>
+<summary>Table of Contents</summary>
+
+- [What FlowMind does](#what-flowmind-does)
+- [How it works](#how-it-works)
+- [Screenshots](#screenshots)
+- [Demo access](#demo-access)
+- [Tech stack](#tech-stack)
+- [Project structure](#project-structure)
+- [Run locally](#run-locally)
+- [Demo-only configuration](#demo-only-configuration)
+- [Deployment](#deployment)
+- [License](#license)
+
+</details>
 
 ## What FlowMind does
 
@@ -185,4 +199,5 @@ For a no-credit showcase deployment, use `AI_PROVIDER=mock` instead.
 
 ## License
 
-See the repository for the current project license and hackathon materials.
+FlowMind is released under the [MIT License](LICENSE).
+
